@@ -1,0 +1,3 @@
+<resources>
+    <style name="Theme.Sayf" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
