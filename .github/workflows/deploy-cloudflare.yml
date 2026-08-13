@@ -55,7 +55,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build WasmJS production bundle
-        run: ./gradlew :composeApp:wasmJsBrowserProductionWebpack
+        run: ./gradlew :composeApp:wasmJsBrowserDistribution
         env:
           GRADLE_OPTS: "-Xmx3g -Dorg.gradle.daemon=false"
 

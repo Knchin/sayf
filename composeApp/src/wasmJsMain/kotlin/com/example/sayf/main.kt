@@ -1,11 +1,11 @@
 package com.example.sayf
 
-import androidx.compose.ui.platform.web.WebComposeApp
-import org.w3c.dom.Element
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.window.CanvasBasedWindow
 
+@OptIn(ExperimentalComposeUiApi::class)
 fun main() {
-    WebComposeApp(
-        rootElement = document.getElementById("root") as Element,
-        content = ::App
-    )
+    CanvasBasedWindow(canvasElementId = "root") {
+        App()
+    }
 }

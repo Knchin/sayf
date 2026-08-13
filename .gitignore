@@ -1,0 +1,19 @@
+# Gradle
+.gradle/
+**/build/
+local.properties
+kotlin-js-store/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+
+# Node
+node_modules/
+package-lock.json
+npm-shrinkwrap.json
+yarn.lock
