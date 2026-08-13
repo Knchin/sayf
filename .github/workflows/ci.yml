@@ -219,16 +219,34 @@ jobs:
           accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy web-build --project-name=sayf --branch=master
 
-      - name: Verify deployment is live
+      - name: Inspect project and verify deployment is live
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          set -euo pipefail
+          API="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/sayf"
+          PROJECT=$(curl -sS "${API}" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
+          echo "Project response: ${PROJECT}"
+          echo "--- Project summary ---"
+          echo "${PROJECT}" | jq -r '.result | "name=\(.name) subdomain=\(.subdomain) production_branch=\(.production_branch)"'
+          echo "${PROJECT}" | jq -r '.result.latest_deployment | "latest_branch=\(.deployment_trigger.metadata.branch // "?") latest_url=\(.url // "?") latest_status=\(.stage // "?")"'
+          SUBDOMAIN=$(echo "${PROJECT}" | jq -r '.result.subdomain // empty')
+          if [ -z "${SUBDOMAIN}" ]; then
+            echo "::error::Could not determine project subdomain from API response."
+            exit 1
+          fi
+          URL="https://${SUBDOMAIN}/"
+          echo "Verifying deployment at ${URL}..."
           for i in $(seq 1 12); do
-            CODE=$(curl -s -o /dev/null -w '%{http_code}' "https://sayf.pages.dev/" || true)
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' "${URL}" || true)
             echo "Attempt $i: HTTP ${CODE}"
             if [ "${CODE}" = "200" ]; then
-              echo "Deployment verified live at https://sayf.pages.dev/"
+              echo "Deployment verified live at ${URL}"
               exit 0
             fi
             sleep 10
           done
-          echo "::error::Deployment not live at https://sayf.pages.dev/ after 120 seconds."
+          echo "::error::Deployment not live at ${URL} after 120 seconds."
           exit 1
