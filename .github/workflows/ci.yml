@@ -187,29 +187,30 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PROJECT_NAME: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
         run: |
           set -euo pipefail
           API="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects"
-          echo "Creating project 'sayf' (production_branch=master)..."
+          echo "Creating project '${CLOUDFLARE_PROJECT_NAME}' (production_branch=master)..."
           CREATE=$(curl -sS -X POST "${API}" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H "Content-Type: application/json" \
-            --data '{"name":"sayf","production_branch":"master"}')
+            --data "{\"name\":\"${CLOUDFLARE_PROJECT_NAME}\",\"production_branch\":\"master\"}")
           echo "Create response: ${CREATE}"
           if echo "${CREATE}" | jq -e '.success == true' > /dev/null 2>&1; then
-            echo "Project 'sayf' created successfully."
+            echo "Project '${CLOUDFLARE_PROJECT_NAME}' created successfully."
           else
             echo "Create reported a failure (project may already exist). Forcing production_branch=master via update..."
-            UPDATE=$(curl -sS -X PATCH "${API}/sayf" \
+            UPDATE=$(curl -sS -X PATCH "${API}/${CLOUDFLARE_PROJECT_NAME}" \
               -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
               -H "Content-Type: application/json" \
               --data '{"production_branch":"master"}')
             echo "Update response: ${UPDATE}"
             if ! echo "${UPDATE}" | jq -e '.success == true' > /dev/null 2>&1; then
-              echo "::error::Failed to create or update Pages project 'sayf'."
+              echo "::error::Failed to create or update Pages project '${CLOUDFLARE_PROJECT_NAME}'."
               exit 1
             fi
-            echo "Project 'sayf' updated: production_branch=master."
+            echo "Project '${CLOUDFLARE_PROJECT_NAME}' updated: production_branch=master."
           fi
 
       - name: Deploy to Cloudflare Pages
@@ -217,15 +218,16 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy web-build --project-name=sayf --branch=master
+          command: pages deploy web-build --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} --branch=master
 
       - name: Inspect project and verify deployment is live
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PROJECT_NAME: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
         run: |
           set -euo pipefail
-          API="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/sayf"
+          API="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${CLOUDFLARE_PROJECT_NAME}"
           PROJECT=$(curl -sS "${API}" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
           echo "Project response: ${PROJECT}"
