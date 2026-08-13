@@ -1,15 +1,12 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.android.application)
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
+    id("org.jetbrains.compose.gradle.plugin") version "1.6.10" apply false
 }
 
+@OptIn(org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl::class)
 kotlin {
-    androidTarget {
-        withJava()
-    }
+    androidTarget()
     iosX64()
     iosArm64()
     iosSimulatorArm64()
@@ -17,62 +14,60 @@ kotlin {
         binaries.executable()
         browser {
             commonWebpackConfig {
-                cssSupport.enabled = true
+                cssSupport {
+                    enabled = true
+                }
             }
         }
-    }
-
-    listOf(
-        androidTarget,
-        iosX64,
-        iosArm64,
-        iosSimulatorArm64,
-        wasmJs
-    ).forEach {
-        it.compilerOptions.freeCompilerArgs.add("-Xskip-metadata-version-check")
     }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(compose.material3)
-                implementation(compose.runtime)
-                implementation(compose.ui)
-                implementation(compose.foundation)
-                implementation(compose.material3.adaptive)
-                implementation(compose.components.resources)
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+                implementation(libs.compose.material3)
+                implementation(libs.compose.runtime)
+                implementation(libs.compose.ui)
+                implementation(libs.compose.foundation)
+                implementation(libs.compose.material3.adaptive)
+                implementation(libs.compose.components.resources)
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.serialization.json)
             }
         }
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test"))
-                implementation(compose.ui.test.junit4)
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+                implementation(libs.kotlin.test)
+                implementation(libs.compose.ui.test.junit4)
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
         val androidMain by getting {
             dependencies {
-                implementation(compose.ui.platform.android)
-                implementation(compose.material3)
-                implementation(activity.compose)
-                implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.0")
+                implementation(libs.compose.ui.platform.android)
+                implementation(libs.compose.material3)
+                implementation(libs.activity.compose)
+                implementation(libs.lifecycle.runtime.compose)
             }
         }
-        val iosMain by getting {
+        val iosX64Main by getting {
             dependencies {
-                implementation(compose.ui.platform.ios)
-                implementation(compose.foundation)
-                implementation(compose.material3)
+                implementation(libs.compose.ui.platform.ios)
+                implementation(libs.compose.foundation)
+                implementation(libs.compose.material3)
             }
+        }
+        val iosArm64Main by getting {
+            dependsOn(iosX64Main)
+        }
+        val iosSimulatorArm64Main by getting {
+            dependsOn(iosX64Main)
         }
         val wasmJsMain by getting {
             dependencies {
-                implementation(compose.ui.platform.web)
-                implementation(compose.material3)
-                implementation(compose.foundation)
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.8.1")
+                implementation(libs.compose.ui.platform.web)
+                implementation(libs.compose.material3)
+                implementation(libs.compose.foundation)
+                implementation(libs.kotlinx.coroutines.core.js)
             }
         }
     }
@@ -94,7 +89,7 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -102,25 +97,6 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.6.10"
     }
-}
-
-kotlin {
-    android()
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
-    wasmJs {
-        binaries.executable()
-        browser {
-            commonWebpackConfig {
-                cssSupport.enabled = true
-            }
-        }
-    }
-}
-
-compose.desktop {
-    // Desktop target not needed for this project
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

@@ -8,24 +8,24 @@ lifecycle = "2.8.0"
 activity = "1.9.0"
 kotlinxCoroutines = "1.8.1"
 kotlinxSerialization = "1.6.3"
+compose-bom = "2024.06.00"
 
 [libraries]
 kotlin-multiplatform = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-compose-multiplatform = { module = "org.jetbrains.compose:compose-multiplatform-gradle-plugin", version.ref = "compose" }
+compose-gradle-plugin = { module = "org.jetbrains.compose:org.jetbrains.compose.gradle.plugin", version.ref = "compose" }
 android-application = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 android-library = { module = "com.android.tools.build:gradle", version.ref = "agp" }
-kotlin-android = { module = "org.jetbrains.kotlin:kotlin-android", version.ref = "kotlin" }
 
-compose-bom = { module = "androidx.compose:compose-bom", version = "2024.06.00" }
-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose" }
-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "compose" }
-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }
-compose-material3-adaptive = { module = "androidx.compose.material3:material3-adaptive", version.ref = "compose" }
-compose-components-resources = { module = "org.jetbrains.compose.components:compose-components-resources", version.ref = "compose" }
-compose-ui-platform-android = { module = "androidx.compose.ui:ui-platform-android", version.ref = "compose" }
-compose-ui-platform-ios = { module = "org.jetbrains.compose.ui:ui-platform-ios", version.ref = "compose" }
-compose-ui-platform-web = { module = "org.jetbrains.compose.ui:ui-platform-web", version.ref = "compose" }
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
+compose-material3 = { module = "androidx.compose.material3:material3" }
+compose-runtime = { module = "androidx.compose.runtime:runtime" }
+compose-ui = { module = "androidx.compose.ui:ui" }
+compose-foundation = { module = "androidx.compose.foundation:foundation" }
+compose-material3-adaptive = { module = "androidx.compose.material3:material3-adaptive" }
+compose-components-resources = { module = "org.jetbrains.compose.components:compose-components-resources" }
+compose-ui-platform-android = { module = "androidx.compose.ui:ui-platform-android" }
+compose-ui-platform-ios = { module = "org.jetbrains.compose.ui:ui-platform-ios" }
+compose-ui-platform-web = { module = "org.jetbrains.compose.ui:ui-platform-web" }
 
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-core-js = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-js", version.ref = "coroutines" }
@@ -35,12 +35,12 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
 
-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "compose" }
+compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-compose-multiplatform = { id = "org.jetbrains.compose.multiplatform", version.ref = "compose" }
+compose-gradle-plugin = { id = "org.jetbrains.compose.gradle.plugin", version.ref = "compose" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
