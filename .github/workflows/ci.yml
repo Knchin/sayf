@@ -183,17 +183,34 @@ jobs:
           name: web-build
           path: web-build
 
-      - name: Create Cloudflare Pages project
+      - name: Create or update Cloudflare Pages project
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          curl -fsS -X POST \
+          set -euo pipefail
+          API="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects"
+          echo "Creating project 'sayf' (production_branch=master)..."
+          CREATE=$(curl -sS -X POST "${API}" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H "Content-Type: application/json" \
-            --data '{"name":"sayf","production_branch":"master"}' \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects" \
-            || echo "Project creation returned non-zero (likely already exists), continuing"
+            --data '{"name":"sayf","production_branch":"master"}')
+          echo "Create response: ${CREATE}"
+          if echo "${CREATE}" | jq -e '.success == true' > /dev/null 2>&1; then
+            echo "Project 'sayf' created successfully."
+          else
+            echo "Create reported a failure (project may already exist). Forcing production_branch=master via update..."
+            UPDATE=$(curl -sS -X PATCH "${API}/sayf" \
+              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              --data '{"production_branch":"master"}')
+            echo "Update response: ${UPDATE}"
+            if ! echo "${UPDATE}" | jq -e '.success == true' > /dev/null 2>&1; then
+              echo "::error::Failed to create or update Pages project 'sayf'."
+              exit 1
+            fi
+            echo "Project 'sayf' updated: production_branch=master."
+          fi
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
@@ -201,3 +218,17 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy web-build --project-name=sayf --branch=master
+
+      - name: Verify deployment is live
+        run: |
+          for i in $(seq 1 12); do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' "https://sayf.pages.dev/" || true)
+            echo "Attempt $i: HTTP ${CODE}"
+            if [ "${CODE}" = "200" ]; then
+              echo "Deployment verified live at https://sayf.pages.dev/"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::Deployment not live at https://sayf.pages.dev/ after 120 seconds."
+          exit 1
